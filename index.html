@@ -1130,10 +1130,10 @@
   function eventModel(){
     const c=cap()/100,r=(+sRisk.value)/100,l=c;
     const reff=clamp(0.55*r+0.35*(1-c)+0.10*(1-l),0,1);
-    const pcv=interpAnchors(reff,[[0.30,0.10],[0.55,0.30],[0.80,0.55]]);
-    const pcancer=interpAnchors(reff,[[0.30,0.25],[0.55,0.40],[0.80,0.55]]);
-    const cvAge=interpAnchors(reff,[[0.30,82],[0.55,75],[0.80,67]]);
-    const cancerAge=interpAnchors(reff,[[0.30,70],[0.55,65],[0.80,58]]);
+    const pcv=interpAnchors(reff,[[0.05,0.02],[0.30,0.10],[0.55,0.30],[0.80,0.55],[0.95,0.67]]);
+    const pcancer=interpAnchors(reff,[[0.05,0.10],[0.30,0.25],[0.55,0.40],[0.80,0.55],[0.95,0.64]]);
+    const cvAge=interpAnchors(reff,[[0.05,89],[0.30,82],[0.55,75],[0.80,67],[0.95,62]]);
+    const cancerAge=interpAnchors(reff,[[0.05,75],[0.30,70],[0.55,65],[0.80,58],[0.95,54]]);
     const eventProb=1-(1-pcv)*(1-pcancer);
     const age=(cvAge*pcv+cancerAge*pcancer)/Math.max(0.001,pcv+pcancer);
     const recovery=(0.75*pcv+0.20*pcancer)/Math.max(0.001,pcv+pcancer);
