@@ -1082,6 +1082,10 @@
         <text class="axistitle" id="cp-xage" x="864" y="788" text-anchor="middle">AGE</text>
       </g>
       <path id="cp-inkc" fill="none" stroke="#1D1B18" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <line id="cp-event-guide" x1="0" y1="0" x2="0" y2="0" stroke="#A4452C" stroke-width="1.6" stroke-dasharray="5 6" opacity="0"/>
+      <circle id="cp-event-dot" cx="0" cy="0" r="6" fill="#A4452C" stroke="#FAF7F2" stroke-width="2.5" opacity="0"/>
+      <text id="cp-event-label" class="evlab" x="0" y="0" text-anchor="middle" opacity="0">DISEASE EVENT</text>
+      <text id="cp-event-prob" class="winlab" x="0" y="0" text-anchor="middle" opacity="0"></text>
       <rect id="cp-p0" width="9" height="9" fill="#1D1B18" opacity="0"/>
       <rect id="cp-p1" width="9" height="9" fill="#1D1B18" opacity="0"/>
     </svg>
@@ -1105,15 +1109,41 @@
   function conditioningCurve(c,age){const d=templateAt(TEMPLATES.deconditioned,age),av=templateAt(TEMPLATES.average,age),e=templateAt(TEMPLATES.elite,age);
     if(c<=33){const k=c/33;return d*(1-k)+av*k;}const k=(c-33)/67;return av*(1-k)+e*k;}
   function baseCapacity(c,l,age){const baseline=conditioningCurve(c,30),un=conditioningCurve(c,age),mult=1.10-(l/100)*0.20;return baseline+mult*(un-baseline);}
-  // disease risk folds a smooth late-life decline into the single curve (no separate event branch — matches Ola's reference)
-  function riskFactor(age){const r=(+sRisk.value)/100,onset=88-r*44,drop=0.06+r*0.50;return 1-drop/(1+Math.exp(-(age-onset)/7));}
   const PL=216,PR=1512,PT=160,PB=736,AMIN=30,AMAX=100,VMAX=58;
   const clamp=(v,a,b)=>Math.min(b,Math.max(a,v)),smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
   const x=a=>PL+((a-AMIN)/(AMAX-AMIN))*(PR-PL),y=v=>PT+(1-v/VMAX)*(PB-PT);
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const interpAnchors=(v,pts)=>{
+    if(v<=pts[0][0])return pts[0][1];
+    for(let i=0;i<pts.length-1;i++){const [x0,y0]=pts[i],[x1,y1]=pts[i+1];if(v<=x1){return lerp(y0,y1,(v-x0)/(x1-x0));}}
+    return pts[pts.length-1][1];
+  };
   const $=id=>document.getElementById(id);
   const sCap=$('cp-sCap'),sRisk=$('cp-sRisk');
   const cap=()=>+sCap.value;                          // capability sets the height of the curve
-  const cv=age=>clamp(baseCapacity(cap(),cap(),age)*riskFactor(age),0,VMAX); // one curve; disease risk bends its tail down
+  // Heuristic disease event, anchored to the original three-slider model:
+  // R_eff = .55 Underlying Risk + .35 low Conditioning + .10 low Lifestyle. This two-control slide
+  // uses Capability as the nearest available proxy for both Conditioning and Lifestyle Optimization.
+  function eventModel(){
+    const c=cap()/100,r=(+sRisk.value)/100,l=c;
+    const reff=clamp(0.55*r+0.35*(1-c)+0.10*(1-l),0,1);
+    const pcv=interpAnchors(reff,[[0.30,0.10],[0.55,0.30],[0.80,0.55]]);
+    const pcancer=interpAnchors(reff,[[0.30,0.25],[0.55,0.40],[0.80,0.55]]);
+    const cvAge=interpAnchors(reff,[[0.30,82],[0.55,75],[0.80,67]]);
+    const cancerAge=interpAnchors(reff,[[0.30,70],[0.55,65],[0.80,58]]);
+    const eventProb=1-(1-pcv)*(1-pcancer);
+    const age=(cvAge*pcv+cancerAge*pcancer)/Math.max(0.001,pcv+pcancer);
+    const recovery=(0.75*pcv+0.20*pcancer)/Math.max(0.001,pcv+pcancer);
+    const tauYears=(0.5*pcv+2.0*pcancer)/Math.max(0.001,pcv+pcancer);
+    return {reff,pcv,pcancer,eventProb,age,drop:0.25,recovery,tauYears};
+  }
+  function diseaseFactor(age){
+    const ev=eventModel();
+    if(age<ev.age)return 1;
+    const years=age-ev.age,residual=ev.drop*(1-ev.recovery);
+    return 1-ev.drop+(ev.drop-residual)*(1-Math.exp(-years/ev.tauYears));
+  }
+  const cv=age=>clamp(baseCapacity(cap(),cap(),age)*diseaseFactor(age),0,VMAX); // one representative path with an event notch
   function cpath(fn){let d='';for(let a=AMIN;a<=AMAX;a++){d+=(a===AMIN?'M':'L')+x(a).toFixed(1)+' '+y(clamp(fn(a),0,VMAX)).toFixed(1)+' ';}return d;}
   const SVGNS='http://www.w3.org/2000/svg',ROWS=9,rh=(PB-PT)/ROWS;
   // grid — 6 columns x 9 rows, faint, fading from invisible at the top to light grey at the bottom (Ola's reference)
@@ -1130,6 +1160,7 @@
   const BANDS=[[0,3,'rgba(127,159,123,0.22)'],[3,3,'rgba(201,161,78,0.24)'],[6,3,'rgba(164,69,44,0.22)']],bandsG=$('cp-bands'),bandRects=[];
   BANDS.forEach(([row,span,fill])=>{const r=document.createElementNS(SVGNS,'rect');r.setAttribute('x',PL);r.setAttribute('width',PR-PL);r.setAttribute('y',PT+row*rh);r.setAttribute('height',span*rh);r.setAttribute('fill',fill);bandsG.appendChild(r);bandRects.push(r);});
   const axes=$('cp-axes'),inkc=$('cp-inkc'),p0=$('cp-p0'),p1=$('cp-p1'),
+        eventGuide=$('cp-event-guide'),eventDot=$('cp-event-dot'),eventLabel=$('cp-event-label'),eventProbLabel=$('cp-event-prob'),
         controls=$('cp-controls'),hint=$('cp-hint'),ycap=$('cp-ycap'),athlete=$('cp-athlete'),independent=$('cp-independent'),dependent=$('cp-dependent'),disc=$('cp-disc'),
         title=$('cp-title'),title2=$('cp-title2'),track=$('cp-track'),xage=$('cp-xage');
   const headEl=document.querySelector('.curve-instrument .head'),plotEl=document.querySelector('.curve-instrument svg.plot'),stageEl=document.querySelector('.curve-instrument .stage');
@@ -1145,6 +1176,13 @@
     const e0x=x(AMIN),e0y=y(cv(AMIN)),e1x=x(AMAX),e1y=y(cv(AMAX));   // square markers ride the curve ends
     p0.setAttribute('x',e0x-4.5);p0.setAttribute('y',e0y-4.5);p0.style.opacity=drawT;
     p1.setAttribute('x',e1x-4.5);p1.setAttribute('y',e1y-4.5);p1.style.opacity=drawT;
+    const ev=eventModel(),evx=x(ev.age),evy=y(cv(ev.age)),evIn=smooth(clamp((p-0.30)/0.10,0,1));
+    eventGuide.setAttribute('x1',evx);eventGuide.setAttribute('x2',evx);eventGuide.setAttribute('y1',PT+28);eventGuide.setAttribute('y2',PB);
+    eventDot.setAttribute('cx',evx);eventDot.setAttribute('cy',evy);
+    eventLabel.setAttribute('x',evx);eventLabel.setAttribute('y',Math.max(PT+42,evy-42));
+    eventProbLabel.setAttribute('x',evx);eventProbLabel.setAttribute('y',Math.max(PT+58,evy-26));
+    eventProbLabel.textContent=Math.round(ev.eventProb*100)+'% lifetime risk';
+    eventGuide.style.opacity=drawT*evIn*0.72;eventDot.style.opacity=drawT*evIn;eventLabel.style.opacity=drawT*evIn;eventProbLabel.style.opacity=drawT*evIn;
     // beat 2: bands SNAP in one row at a time — discrete pops (no fade, no slide), like blocks clicking into place
     const BAND_START=0.40,BAND_STEP=0.045;
     bandRects.forEach((r,i)=>{ r.style.opacity = p>=(BAND_START+i*BAND_STEP)?1:0; });
