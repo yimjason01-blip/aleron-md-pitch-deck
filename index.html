@@ -1083,7 +1083,6 @@
       </g>
       <path id="cp-inkc" fill="none" stroke="#1D1B18" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
       <path id="cp-event-branch" fill="none" stroke="#A4452C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0"/>
-      <line id="cp-event-guide" x1="0" y1="0" x2="0" y2="0" stroke="#A4452C" stroke-width="1.6" stroke-dasharray="5 6" opacity="0"/>
       <circle id="cp-event-dot" cx="0" cy="0" r="6" fill="#A4452C" stroke="#FAF7F2" stroke-width="2.5" opacity="0"/>
       <text id="cp-event-label" class="evlab" x="0" y="0" text-anchor="middle" opacity="0">DISEASE EVENT</text>
       <text id="cp-event-prob" class="winlab" x="0" y="0" text-anchor="middle" opacity="0"></text>
@@ -1147,7 +1146,13 @@
   const cv=age=>clamp(baseCapacity(cap(),cap(),age),0,VMAX); // original no-event capability curve stays intact
   const cvEvent=age=>clamp(baseCapacity(cap(),cap(),age)*diseaseFactor(age),0,VMAX); // bifurcated disease-event branch
   function cpath(fn){let d='';for(let a=AMIN;a<=AMAX;a++){d+=(a===AMIN?'M':'L')+x(a).toFixed(1)+' '+y(clamp(fn(a),0,VMAX)).toFixed(1)+' ';}return d;}
-  function branchPath(fn,startAge){let d='M'+x(startAge).toFixed(1)+' '+y(cv(startAge)).toFixed(1)+' ';for(let a=Math.ceil(startAge);a<=AMAX;a++){d+='L'+x(a).toFixed(1)+' '+y(clamp(fn(a),0,VMAX)).toFixed(1)+' ';}return d;}
+  function branchPath(fn,startAge){
+    const fx=x(startAge).toFixed(1);
+    let d='M'+fx+' '+y(cv(startAge)).toFixed(1)+' ';            // fork point on the original curve
+    d+='L'+fx+' '+y(clamp(fn(startAge),0,VMAX)).toFixed(1)+' '; // acute drop: vertical at the same age (same x)
+    for(let a=Math.ceil(startAge);a<=AMAX;a++){d+='L'+x(a).toFixed(1)+' '+y(clamp(fn(a),0,VMAX)).toFixed(1)+' ';}
+    return d;
+  }
   const SVGNS='http://www.w3.org/2000/svg',ROWS=9,rh=(PB-PT)/ROWS;
   // grid — 6 columns x 9 rows, faint, fading from invisible at the top to light grey at the bottom (Ola's reference)
   const gridG=$('cp-grid');
@@ -1163,7 +1168,7 @@
   const BANDS=[[0,3,'rgba(127,159,123,0.22)'],[3,3,'rgba(201,161,78,0.24)'],[6,3,'rgba(164,69,44,0.22)']],bandsG=$('cp-bands'),bandRects=[];
   BANDS.forEach(([row,span,fill])=>{const r=document.createElementNS(SVGNS,'rect');r.setAttribute('x',PL);r.setAttribute('width',PR-PL);r.setAttribute('y',PT+row*rh);r.setAttribute('height',span*rh);r.setAttribute('fill',fill);bandsG.appendChild(r);bandRects.push(r);});
   const axes=$('cp-axes'),inkc=$('cp-inkc'),p0=$('cp-p0'),p1=$('cp-p1'),
-        eventBranch=$('cp-event-branch'),eventGuide=$('cp-event-guide'),eventDot=$('cp-event-dot'),eventLabel=$('cp-event-label'),eventProbLabel=$('cp-event-prob'),
+        eventBranch=$('cp-event-branch'),eventDot=$('cp-event-dot'),eventLabel=$('cp-event-label'),eventProbLabel=$('cp-event-prob'),
         controls=$('cp-controls'),hint=$('cp-hint'),ycap=$('cp-ycap'),athlete=$('cp-athlete'),independent=$('cp-independent'),dependent=$('cp-dependent'),disc=$('cp-disc'),
         title=$('cp-title'),title2=$('cp-title2'),track=$('cp-track'),xage=$('cp-xage');
   const headEl=document.querySelector('.curve-instrument .head'),plotEl=document.querySelector('.curve-instrument svg.plot'),stageEl=document.querySelector('.curve-instrument .stage');
@@ -1182,12 +1187,11 @@
     p0.setAttribute('x',e0x-4.5);p0.setAttribute('y',e0y-4.5);p0.style.opacity=drawT;
     p1.setAttribute('x',e1x-4.5);p1.setAttribute('y',e1y-4.5);p1.style.opacity=drawT;
     const evx=x(ev.age),evy=y(cv(ev.age)),evIn=smooth(clamp((p-0.30)/0.10,0,1));
-    eventGuide.setAttribute('x1',evx);eventGuide.setAttribute('x2',evx);eventGuide.setAttribute('y1',PT+28);eventGuide.setAttribute('y2',PB);
     eventDot.setAttribute('cx',evx);eventDot.setAttribute('cy',evy);
     eventLabel.setAttribute('x',evx);eventLabel.setAttribute('y',Math.max(PT+42,evy-42));
     eventProbLabel.setAttribute('x',evx);eventProbLabel.setAttribute('y',Math.max(PT+58,evy-26));
     eventProbLabel.textContent=Math.round(ev.eventProb*100)+'% lifetime risk';
-    eventGuide.style.opacity=drawT*evIn*0.72;eventDot.style.opacity=drawT*evIn;eventLabel.style.opacity=drawT*evIn;eventProbLabel.style.opacity=drawT*evIn;eventBranch.style.opacity=drawT*evIn;
+    eventDot.style.opacity=drawT*evIn;eventLabel.style.opacity=drawT*evIn;eventProbLabel.style.opacity=drawT*evIn;eventBranch.style.opacity=drawT*evIn;
     // beat 2: bands SNAP in one row at a time — discrete pops (no fade, no slide), like blocks clicking into place
     const BAND_START=0.40,BAND_STEP=0.045;
     bandRects.forEach((r,i)=>{ r.style.opacity = p>=(BAND_START+i*BAND_STEP)?1:0; });
