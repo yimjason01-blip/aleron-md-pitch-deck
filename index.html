@@ -1672,8 +1672,30 @@
           </div>
         </div>
         <div class="alm-field">
-          <label for="m-note">Anything we should know?</label>
-          <textarea id="m-note" name="note" placeholder="What&rsquo;s prompting you to look now? Optional."></textarea>
+          <label for="m-motivation">What&rsquo;s prompting you to prioritize your health now?<span class="req">*</span></label>
+          <select id="m-motivation" name="motivation" required>
+            <option value="" selected disabled>Select&hellip;</option>
+            <option>Family or genetic risk I want to get ahead of</option>
+            <option>Longevity and healthspan</option>
+            <option>A recent health concern or scare</option>
+            <option>Performance, energy, and staying sharp</option>
+            <option>Other</option>
+          </select>
+          <span class="alm-error">Please select one.</span>
+        </div>
+        <div class="alm-field">
+          <label for="m-approach">How would you describe your approach to your health today?<span class="req">*</span></label>
+          <select id="m-approach" name="approach" required>
+            <option value="" selected disabled>Select&hellip;</option>
+            <option>I actively track and optimize (labs, wearables, etc.)</option>
+            <option>I cover the basics but want to go deeper</option>
+            <option>I&rsquo;ve been mostly hands-off and want to change that</option>
+          </select>
+          <span class="alm-error">Please select one.</span>
+        </div>
+        <div class="alm-field">
+          <label for="m-note">What questions do you have for us?</label>
+          <textarea id="m-note" name="note" placeholder="Anything you&rsquo;d like answered before we talk."></textarea>
         </div>
         <button type="submit" class="alm-submit">Submit application</button>
         <p class="alm-fineprint">By submitting, you agree to be contacted by Aleron MD about membership. We never share your information.</p>
@@ -1732,8 +1754,8 @@
           </div>
         </div>
         <div class="alm-field">
-          <label for="p-note">Message</label>
-          <textarea id="p-note" name="note" placeholder="What are you looking to solve? Optional."></textarea>
+          <label for="p-note">What questions do you have for us?</label>
+          <textarea id="p-note" name="note" placeholder="What are you looking to solve?"></textarea>
         </div>
         <button type="submit" class="alm-submit">Send inquiry</button>
         <p class="alm-fineprint">By submitting, you agree to be contacted by Aleron MD about partnership. We never share your information.</p>
