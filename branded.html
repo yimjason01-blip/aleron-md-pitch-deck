@@ -1085,6 +1085,7 @@
       <path id="cp-event-branch" fill="none" stroke="#A4452C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0"/>
       <line id="cp-event-leader" x1="0" y1="0" x2="0" y2="0" stroke="#A4452C" stroke-width="1.25" opacity="0"/>
       <circle id="cp-event-dot" cx="0" cy="0" r="5.5" fill="#A4452C" stroke="#FAF7F2" stroke-width="2.5" opacity="0"/>
+      <circle id="cp-event-dot2" cx="0" cy="0" r="4" fill="#A4452C" opacity="0"/>
       <text id="cp-event-label" x="0" y="0" style="font-family:var(--audit);font-size:11px;letter-spacing:.14em;fill:#A4452C" opacity="0">DISEASE EVENT</text>
       <text id="cp-event-prob" x="0" y="0" style="font-family:var(--voice);font-size:34px;font-weight:600;letter-spacing:-.01em;fill:#A4452C" opacity="0"></text>
       <text id="cp-event-cap" x="0" y="0" style="font-family:var(--audit);font-size:11px;letter-spacing:.1em;fill:#8A6F66" opacity="0">PROBABILITY</text>
@@ -1170,7 +1171,7 @@
   const BANDS=[[0,3,'rgba(127,159,123,0.22)'],[3,3,'rgba(201,161,78,0.24)'],[6,3,'rgba(164,69,44,0.22)']],bandsG=$('cp-bands'),bandRects=[];
   BANDS.forEach(([row,span,fill])=>{const r=document.createElementNS(SVGNS,'rect');r.setAttribute('x',PL);r.setAttribute('width',PR-PL);r.setAttribute('y',PT+row*rh);r.setAttribute('height',span*rh);r.setAttribute('fill',fill);bandsG.appendChild(r);bandRects.push(r);});
   const axes=$('cp-axes'),inkc=$('cp-inkc'),p0=$('cp-p0'),p1=$('cp-p1'),
-        eventBranch=$('cp-event-branch'),eventLeader=$('cp-event-leader'),eventDot=$('cp-event-dot'),eventLabel=$('cp-event-label'),eventProbLabel=$('cp-event-prob'),eventCap=$('cp-event-cap'),
+        eventBranch=$('cp-event-branch'),eventLeader=$('cp-event-leader'),eventDot=$('cp-event-dot'),eventDot2=$('cp-event-dot2'),eventLabel=$('cp-event-label'),eventProbLabel=$('cp-event-prob'),eventCap=$('cp-event-cap'),
         controls=$('cp-controls'),hint=$('cp-hint'),ycap=$('cp-ycap'),athlete=$('cp-athlete'),independent=$('cp-independent'),dependent=$('cp-dependent'),disc=$('cp-disc'),
         title=$('cp-title'),title2=$('cp-title2'),track=$('cp-track'),xage=$('cp-xage');
   const headEl=document.querySelector('.curve-instrument .head'),plotEl=document.querySelector('.curve-instrument svg.plot'),stageEl=document.querySelector('.curve-instrument .stage');
@@ -1190,21 +1191,21 @@
     p1.setAttribute('x',e1x-4.5);p1.setAttribute('y',e1y-4.5);p1.style.opacity=drawT;
     const evx=x(ev.age),evy=y(cv(ev.age)),evIn=smooth(clamp((p-0.30)/0.10,0,1));
     eventDot.setAttribute('cx',evx);eventDot.setAttribute('cy',evy);
-    // leader-line callout: thin line lifts from the fork into open space above the curve,
-    // text block hangs off the leader's top, left-aligned; flips left when the fork nears the right edge.
-    const flip = evx > PR-300;              // near right edge → place callout to the LEFT of the fork
-    const tx = flip ? evx-150 : evx+150;    // horizontal leader run
-    const ty = PT+58;                       // text sits in the empty upper band, well above the curve
-    const anchor = flip ? 'end' : 'start';
-    eventLeader.setAttribute('x1',evx);eventLeader.setAttribute('y1',evy-7);
-    eventLeader.setAttribute('x2',tx);eventLeader.setAttribute('y2',ty+8);
-    [eventLabel,eventProbLabel,eventCap].forEach(t=>t.setAttribute('text-anchor',anchor));
-    const lx = tx + (flip? -2 : 2);
-    eventLabel.setAttribute('x',lx);eventLabel.setAttribute('y',ty-18);
-    eventProbLabel.setAttribute('x',lx);eventProbLabel.setAttribute('y',ty+14);
-    eventCap.setAttribute('x',lx);eventCap.setAttribute('y',ty+32);
+    // Annotation belongs to the RESULTING red path, not the fork. Anchor the leader onto a point
+    // partway down the red branch, then hang the text block in the open space directly below it.
+    let ax = evx + 0.34*(PR-evx);                 // ~1/3 along the red branch from the fork
+    ax = Math.min(ax, PR-118);                     // keep the text block inside the plot
+    const ageAtAx = AMIN + (ax-PL)/(PR-PL)*(AMAX-AMIN);
+    const redY = y(clamp(cvEvent(ageAtAx),0,VMAX));// y of the red path at that x — the tether point
+    eventDot2.setAttribute('cx',ax);eventDot2.setAttribute('cy',redY);
+    eventLeader.setAttribute('x1',ax);eventLeader.setAttribute('y1',redY);
+    eventLeader.setAttribute('x2',ax);eventLeader.setAttribute('y2',redY+34);
+    [eventLabel,eventProbLabel,eventCap].forEach(t=>t.setAttribute('text-anchor','middle'));
+    eventLabel.setAttribute('x',ax);eventLabel.setAttribute('y',redY+50);
+    eventProbLabel.setAttribute('x',ax);eventProbLabel.setAttribute('y',redY+84);
+    eventCap.setAttribute('x',ax);eventCap.setAttribute('y',redY+102);
     eventProbLabel.textContent=Math.round(ev.eventProb*100)+'%';
-    eventDot.style.opacity=drawT*evIn;eventLeader.style.opacity=drawT*evIn*0.6;eventLabel.style.opacity=drawT*evIn;eventProbLabel.style.opacity=drawT*evIn;eventCap.style.opacity=drawT*evIn;eventBranch.style.opacity=drawT*evIn;
+    eventDot.style.opacity=drawT*evIn;eventDot2.style.opacity=drawT*evIn;eventLeader.style.opacity=drawT*evIn*0.65;eventLabel.style.opacity=drawT*evIn;eventProbLabel.style.opacity=drawT*evIn;eventCap.style.opacity=drawT*evIn;eventBranch.style.opacity=drawT*evIn;
     // beat 2: bands SNAP in one row at a time — discrete pops (no fade, no slide), like blocks clicking into place
     const BAND_START=0.40,BAND_STEP=0.045;
     bandRects.forEach((r,i)=>{ r.style.opacity = p>=(BAND_START+i*BAND_STEP)?1:0; });
