@@ -1205,7 +1205,7 @@
     eventProbLabel.setAttribute('x',ax);eventProbLabel.setAttribute('y',redY+84);
     eventCap.setAttribute('x',ax);eventCap.setAttribute('y',redY+102);
     eventProbLabel.textContent=Math.round(ev.eventProb*100)+'%';
-    eventDot.style.opacity=drawT*evIn;eventDot2.style.opacity=drawT*evIn;eventLeader.style.opacity=drawT*evIn*0.65;eventLabel.style.opacity=drawT*evIn;eventProbLabel.style.opacity=drawT*evIn;eventCap.style.opacity=drawT*evIn;eventBranch.style.opacity=drawT*evIn;
+    eventDot.style.opacity=0;eventDot2.style.opacity=0;eventLeader.style.opacity=0;eventLabel.style.opacity=drawT*evIn;eventProbLabel.style.opacity=drawT*evIn;eventCap.style.opacity=drawT*evIn;eventBranch.style.opacity=drawT*evIn;
     // beat 2: bands SNAP in one row at a time — discrete pops (no fade, no slide), like blocks clicking into place
     const BAND_START=0.40,BAND_STEP=0.045;
     bandRects.forEach((r,i)=>{ r.style.opacity = p>=(BAND_START+i*BAND_STEP)?1:0; });
