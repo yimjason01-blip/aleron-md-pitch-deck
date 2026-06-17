@@ -1085,7 +1085,7 @@
       <path id="cp-event-branch" fill="none" stroke="#A4452C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0"/>
       <circle id="cp-event-dot" cx="0" cy="0" r="6" fill="#A4452C" stroke="#FAF7F2" stroke-width="2.5" opacity="0"/>
       <text id="cp-event-label" class="evlab" x="0" y="0" text-anchor="middle" opacity="0">DISEASE EVENT</text>
-      <text id="cp-event-prob" class="winlab" x="0" y="0" text-anchor="middle" opacity="0"></text>
+      <text id="cp-event-prob" x="0" y="0" text-anchor="middle" style="font-family:var(--audit);font-size:22px;font-weight:600;letter-spacing:.02em;fill:#A4452C" opacity="0"></text>
       <rect id="cp-p0" width="9" height="9" fill="#1D1B18" opacity="0"/>
       <rect id="cp-p1" width="9" height="9" fill="#1D1B18" opacity="0"/>
     </svg>
@@ -1188,9 +1188,9 @@
     p1.setAttribute('x',e1x-4.5);p1.setAttribute('y',e1y-4.5);p1.style.opacity=drawT;
     const evx=x(ev.age),evy=y(cv(ev.age)),evIn=smooth(clamp((p-0.30)/0.10,0,1));
     eventDot.setAttribute('cx',evx);eventDot.setAttribute('cy',evy);
-    eventLabel.setAttribute('x',evx);eventLabel.setAttribute('y',Math.max(PT+42,evy-42));
-    eventProbLabel.setAttribute('x',evx);eventProbLabel.setAttribute('y',Math.max(PT+58,evy-26));
-    eventProbLabel.textContent=Math.round(ev.eventProb*100)+'% lifetime risk';
+    eventLabel.setAttribute('x',evx);eventLabel.setAttribute('y',Math.max(PT+30,evy-70));
+    eventProbLabel.setAttribute('x',evx);eventProbLabel.setAttribute('y',Math.max(PT+62,evy-34));
+    eventProbLabel.textContent=Math.round(ev.eventProb*100)+'% probability';
     eventDot.style.opacity=drawT*evIn;eventLabel.style.opacity=drawT*evIn;eventProbLabel.style.opacity=drawT*evIn;eventBranch.style.opacity=drawT*evIn;
     // beat 2: bands SNAP in one row at a time — discrete pops (no fade, no slide), like blocks clicking into place
     const BAND_START=0.40,BAND_STEP=0.045;
