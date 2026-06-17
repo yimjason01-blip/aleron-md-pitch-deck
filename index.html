@@ -1032,7 +1032,7 @@
   .curve-instrument .winlab { font-family:var(--audit); font-size:9.5px; fill:#5A6378; letter-spacing:.1em; }
   .curve-instrument .evlab { font-family:var(--audit); font-size:11px; fill:#A4452C; letter-spacing:.08em; }
   /* Controls band beneath the (shortened) graph — each slider lives in its own instrument bezel. */
-  .curve-instrument .controls { position:absolute; bottom:13vh; left:14%; right:14%; display:grid; grid-template-columns:1fr 1fr; gap:clamp(24px,3vw,56px) clamp(24px,3vw,56px); align-items:start; z-index:2; opacity:0; transition:opacity .3s; }
+  .curve-instrument .controls { position:absolute; bottom:16vh; left:14%; right:14%; display:grid; grid-template-columns:1fr 1fr; gap:clamp(24px,3vw,56px); align-items:start; z-index:2; opacity:0; transition:opacity .3s; }
   .curve-instrument .ctl { width:100%; background:#EEE9DE; border:1px solid rgba(29,27,24,0.12); border-radius:14px; padding:clamp(15px,1.4vw,21px) clamp(20px,1.8vw,30px) clamp(13px,1.1vw,17px); box-shadow:0 1px 0 rgba(255,255,255,0.55) inset, 0 14px 34px -24px rgba(29,27,24,0.40); }
   .curve-instrument .ctl-name { font-family:var(--voice); font-weight:600; font-size:15px; color:#1D1B18; }
   .curve-instrument .ctl-sub { font-weight:400; color:#5A6378; }
@@ -1052,7 +1052,7 @@
   .curve-instrument .ctl-marks { display:flex; justify-content:space-between; font-family:var(--audit); font-size:10.5px; letter-spacing:.06em; color:rgba(29,27,24,.5); margin-top:13px; }
   .curve-instrument .hint { position:absolute; left:50%; bottom:18px; transform:translateX(-50%); font-family:var(--audit); font-size:10px; letter-spacing:.14em; color:rgba(29,27,24,.4); z-index:2; }
   /* Fine-print disclaimer — sits directly beneath the slider bezels, fading in with them so it's read before any interaction. */
-  .curve-instrument .cp-disc { grid-column:1 / -1; justify-self:center; max-width:660px; margin:6px 0 0; text-align:center; font-family:var(--audit); font-size:11.5px; line-height:1.65; letter-spacing:.012em; color:rgba(29,27,24,.6); }
+  .curve-instrument .cp-disc { position:absolute; left:50%; bottom:6vh; transform:translateX(-50%); width:min(820px,72%); margin:0; text-align:center; font-family:var(--audit); font-size:11px; line-height:1.55; letter-spacing:.01em; color:rgba(29,27,24,.42); z-index:2; opacity:0; transition:opacity .3s; }
 </style>
 <section class="curve-instrument" data-logo-tone="dark" data-logo-placement="hidden" aria-label="Capability curve instrument">
   <div class="track" id="cp-track"><div class="stage">
@@ -1095,8 +1095,8 @@
     <div class="controls" id="cp-controls">
       <div class="ctl pulse"><div class="ctl-name">Capability <span class="ctl-sub">(VO<sub>2</sub> max)</span></div><input type="range" id="cp-sCap" min="0" max="100" value="40"><div class="ctl-marks"><span>DECONDITIONED</span><span>ELITE</span></div></div>
       <div class="ctl pulse"><div class="ctl-name">Critical disease risk</div><input type="range" id="cp-sRisk" min="0" max="100" value="50"><div class="ctl-marks"><span>LOW</span><span>HIGH</span></div></div>
-      <p class="cp-disc" id="cp-disc">The line traces a typical arc of physical capability, roughly your VO<sub>2</sub> max, the measure of how much your body can do, from age 30 onward. Conditioning sets how high it runs and how gradually it falls; critical disease risk sets the likelihood and timing of a major cardiovascular or cancer event, which forks the curve downward when it strikes and partially recovers after. These shapes are drawn from published longevity and cohort research, not from your data. This is an illustration, not a forecast or medical advice, and individual outcomes vary.</p>
     </div>
+    <p class="cp-disc" id="cp-disc">The line traces a typical arc of physical capability, roughly your VO<sub>2</sub> max, the measure of how much your body can do, from age 30 onward. Conditioning sets how high it runs and how gradually it falls; critical disease risk sets the likelihood and timing of a major cardiovascular or cancer event, which forks the curve downward when it strikes and partially recovers after. These shapes are drawn from published longevity and cohort research, not from your data. This is an illustration, not a forecast or medical advice, and individual outcomes vary.</p>
     <div class="hint" id="cp-hint">SCROLL</div>
   </div></div>
 </section>
