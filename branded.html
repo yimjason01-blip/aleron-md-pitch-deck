@@ -1587,6 +1587,297 @@
   </div>
 </section>
 
+<!-- ============ LEAD-CAPTURE MODALS (membership + partner) ============ -->
+<style>
+  /* button elements reuse .pa-btn (originally anchor-styled) */
+  .paths button.pa-btn { border:none; cursor:pointer; font:inherit; }
+  .paths button.pa-btn.pa-btn-ghost { border:1px solid rgba(245,241,232,0.5); }
+
+  .alm-modal { position:fixed; inset:0; z-index:1000; display:none; }
+  .alm-modal.is-open { display:block; }
+  .alm-modal__backdrop { position:absolute; inset:0; background:rgba(20,22,25,0.62); backdrop-filter:blur(3px); animation:almFade .2s ease; }
+  .alm-modal__dialog { position:relative; z-index:1; max-width:560px; width:calc(100% - 40px); margin:max(4vh,28px) auto; max-height:92vh; overflow-y:auto;
+    background:var(--paper,#FAF7F2); border:1px solid rgba(29,27,24,0.10); box-shadow:0 24px 70px rgba(20,22,25,0.34);
+    padding:clamp(28px,4vw,44px); animation:almRise .26s cubic-bezier(.2,.7,.2,1); }
+  @keyframes almFade { from{opacity:0} to{opacity:1} }
+  @keyframes almRise { from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none} }
+  .alm-modal__close { position:absolute; top:14px; right:14px; width:36px; height:36px; border:none; background:transparent; cursor:pointer; color:#5A6378; font-size:22px; line-height:1; border-radius:50%; transition:background .15s,color .15s; }
+  .alm-modal__close:hover { background:rgba(29,27,24,0.06); color:#1D1B18; }
+  .alm-eyebrow { font-family:var(--audit); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold,#C9A14E); margin:0 0 10px; }
+  .alm-title { font-family:var(--voice); font-weight:400; font-size:clamp(24px,3vw,32px); line-height:1.05; letter-spacing:-.025em; color:#1D1B18; margin:0 0 8px; }
+  .alm-lede { font-family:var(--voice); font-size:15px; line-height:1.5; color:#5A6378; margin:0 0 24px; }
+  .alm-form { display:grid; gap:16px; }
+  .alm-row { display:grid; gap:16px; }
+  @media (min-width:480px){ .alm-row.cols-2 { grid-template-columns:1fr 1fr; } }
+  .alm-field { display:flex; flex-direction:column; gap:6px; }
+  .alm-field label { font-family:var(--audit); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:#1D1B18; }
+  .alm-field label .req { color:var(--gold,#C9A14E); margin-left:2px; }
+  .alm-field input, .alm-field select, .alm-field textarea {
+    font-family:var(--voice); font-size:15px; color:#1D1B18; background:#fff; border:1px solid rgba(29,27,24,0.18);
+    border-radius:6px; padding:11px 13px; width:100%; transition:border-color .15s, box-shadow .15s; }
+  .alm-field textarea { resize:vertical; min-height:84px; }
+  .alm-field input:focus, .alm-field select:focus, .alm-field textarea:focus {
+    outline:none; border-color:var(--gold,#C9A14E); box-shadow:0 0 0 3px rgba(201,161,78,0.18); }
+  .alm-field.has-error input, .alm-field.has-error select, .alm-field.has-error textarea { border-color:#A4452C; }
+  .alm-error { font-family:var(--voice); font-size:12.5px; color:#A4452C; min-height:0; display:none; }
+  .alm-field.has-error .alm-error { display:block; }
+  .alm-submit { font-family:var(--voice); font-weight:500; font-size:15px; letter-spacing:-.01em; color:#FAF7F2; background:#1D1B18;
+    border:none; border-radius:6px; padding:13px 22px; cursor:pointer; margin-top:4px; transition:background .18s, opacity .18s; }
+  .alm-submit:hover { background:#000; }
+  .alm-submit[disabled] { opacity:.6; cursor:default; }
+  .alm-fineprint { font-family:var(--voice); font-size:12px; line-height:1.45; color:#8A8780; margin:2px 0 0; }
+  .alm-fineprint a { color:#5A6378; }
+  .alm-success { text-align:center; padding:14px 0 6px; }
+  .alm-success__mark { width:54px; height:54px; margin:0 auto 16px; border-radius:50%; background:rgba(201,161,78,0.16); color:var(--gold,#C9A14E); display:flex; align-items:center; justify-content:center; font-size:26px; }
+  .alm-success h3 { font-family:var(--voice); font-weight:400; font-size:24px; letter-spacing:-.02em; color:#1D1B18; margin:0 0 8px; }
+  .alm-success p { font-family:var(--voice); font-size:15px; line-height:1.5; color:#5A6378; margin:0 auto; max-width:34ch; }
+</style>
+
+<div class="alm-modal" id="modal-membership" role="dialog" aria-modal="true" aria-labelledby="alm-membership-title" hidden>
+  <div class="alm-modal__backdrop" data-close></div>
+  <div class="alm-modal__dialog">
+    <button type="button" class="alm-modal__close" data-close aria-label="Close">&times;</button>
+    <div class="alm-modal__content">
+      <p class="alm-eyebrow">For Individuals</p>
+      <h2 class="alm-title" id="alm-membership-title">Apply for membership.</h2>
+      <p class="alm-lede">Membership opens in waves. Tell us a little about you and we&rsquo;ll be in touch about the current cohort. Currently serving California and Texas.</p>
+      <form class="alm-form" data-form="membership" novalidate>
+        <div class="alm-row cols-2">
+          <div class="alm-field">
+            <label for="m-name">Full name<span class="req">*</span></label>
+            <input id="m-name" name="name" type="text" autocomplete="name" required>
+            <span class="alm-error">Please enter your name.</span>
+          </div>
+          <div class="alm-field">
+            <label for="m-email">Email<span class="req">*</span></label>
+            <input id="m-email" name="email" type="email" autocomplete="email" required>
+            <span class="alm-error">Please enter a valid email.</span>
+          </div>
+        </div>
+        <div class="alm-row cols-2">
+          <div class="alm-field">
+            <label for="m-phone">Phone</label>
+            <input id="m-phone" name="phone" type="tel" autocomplete="tel">
+            <span class="alm-error">Please enter a valid phone.</span>
+          </div>
+          <div class="alm-field">
+            <label for="m-state">State<span class="req">*</span></label>
+            <select id="m-state" name="state" required>
+              <option value="" selected disabled>Select&hellip;</option>
+              <option>California</option>
+              <option>Texas</option>
+              <option value="Other">Another state</option>
+            </select>
+            <span class="alm-error">Please select your state.</span>
+          </div>
+        </div>
+        <div class="alm-field">
+          <label for="m-note">Anything we should know?</label>
+          <textarea id="m-note" name="note" placeholder="What&rsquo;s prompting you to look now? Optional."></textarea>
+        </div>
+        <button type="submit" class="alm-submit">Submit application</button>
+        <p class="alm-fineprint">By submitting, you agree to be contacted by Aleron MD about membership. We never share your information.</p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="alm-modal" id="modal-partner" role="dialog" aria-modal="true" aria-labelledby="alm-partner-title" hidden>
+  <div class="alm-modal__backdrop" data-close></div>
+  <div class="alm-modal__dialog">
+    <button type="button" class="alm-modal__close" data-close aria-label="Close">&times;</button>
+    <div class="alm-modal__content">
+      <p class="alm-eyebrow">For Employers &amp; Brokers</p>
+      <h2 class="alm-title" id="alm-partner-title">Partner with Aleron.</h2>
+      <p class="alm-lede">Tell us about your population and we&rsquo;ll find the right way to work together.</p>
+      <form class="alm-form" data-form="partner" novalidate>
+        <div class="alm-row cols-2">
+          <div class="alm-field">
+            <label for="p-name">Full name<span class="req">*</span></label>
+            <input id="p-name" name="name" type="text" autocomplete="name" required>
+            <span class="alm-error">Please enter your name.</span>
+          </div>
+          <div class="alm-field">
+            <label for="p-email">Work email<span class="req">*</span></label>
+            <input id="p-email" name="email" type="email" autocomplete="email" required>
+            <span class="alm-error">Please enter a valid work email.</span>
+          </div>
+        </div>
+        <div class="alm-field">
+          <label for="p-org">Organization<span class="req">*</span></label>
+          <input id="p-org" name="organization" type="text" autocomplete="organization" required>
+          <span class="alm-error">Please enter your organization.</span>
+        </div>
+        <div class="alm-row cols-2">
+          <div class="alm-field">
+            <label for="p-role">I am a&hellip;<span class="req">*</span></label>
+            <select id="p-role" name="role" required>
+              <option value="" selected disabled>Select&hellip;</option>
+              <option>Employer / HR</option>
+              <option>Broker / Advisor</option>
+              <option>Other</option>
+            </select>
+            <span class="alm-error">Please select one.</span>
+          </div>
+          <div class="alm-field">
+            <label for="p-size">Approx. population</label>
+            <select id="p-size" name="population">
+              <option value="" selected disabled>Select&hellip;</option>
+              <option>Under 50</option>
+              <option>50&ndash;250</option>
+              <option>250&ndash;1,000</option>
+              <option>1,000&ndash;5,000</option>
+              <option>5,000+</option>
+            </select>
+          </div>
+        </div>
+        <div class="alm-field">
+          <label for="p-note">Message</label>
+          <textarea id="p-note" name="note" placeholder="What are you looking to solve? Optional."></textarea>
+        </div>
+        <button type="submit" class="alm-submit">Send inquiry</button>
+        <p class="alm-fineprint">By submitting, you agree to be contacted by Aleron MD about partnership. We never share your information.</p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ---- Lead capture config ---------------------------------------------
+  // To capture leads for real, paste a Formspree (or compatible) endpoint URL
+  // below. Until then, submissions fall back to a prefilled email to the team
+  // so nothing is lost while you test the flow.
+  var ENDPOINTS = {
+    membership: '',                 // e.g. 'https://formspree.io/f/xxxxxxxx'
+    partner:    ''                  // e.g. 'https://formspree.io/f/yyyyyyyy'
+  };
+  var FALLBACK_EMAIL = { membership: 'apply@AleronMD.com', partner: 'partners@AleronMD.com' };
+  var SUBJECT = { membership: 'Aleron Membership Application', partner: 'Aleron Partnership Inquiry' };
+  // ----------------------------------------------------------------------
+
+  var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var lastTrigger = null;
+
+  function openModal(key){
+    var m = document.getElementById('modal-' + key);
+    if(!m) return;
+    lastTrigger = document.activeElement;
+    m.hidden = false; m.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    var first = m.querySelector('input, select, textarea, button');
+    if(first) setTimeout(function(){ first.focus(); }, 40);
+    document.addEventListener('keydown', onKey);
+  }
+  function closeModal(m){
+    if(!m) return;
+    m.classList.remove('is-open'); m.hidden = true;
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', onKey);
+    if(lastTrigger && lastTrigger.focus) lastTrigger.focus();
+  }
+  function onKey(e){
+    var m = document.querySelector('.alm-modal.is-open');
+    if(!m) return;
+    if(e.key === 'Escape'){ closeModal(m); return; }
+    if(e.key === 'Tab'){
+      var f = m.querySelectorAll('a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])');
+      f = Array.prototype.filter.call(f, function(el){ return el.offsetParent !== null; });
+      if(!f.length) return;
+      var first = f[0], last = f[f.length-1];
+      if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  }
+
+  document.querySelectorAll('[data-open-modal]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openModal(btn.getAttribute('data-open-modal')); });
+  });
+  document.querySelectorAll('.alm-modal [data-close]').forEach(function(el){
+    el.addEventListener('click', function(){ closeModal(el.closest('.alm-modal')); });
+  });
+
+  function setError(field, on){ field.classList.toggle('has-error', !!on); }
+
+  function validate(form){
+    var ok = true;
+    form.querySelectorAll('.alm-field').forEach(function(field){
+      var ctrl = field.querySelector('input, select, textarea');
+      if(!ctrl) return;
+      var val = (ctrl.value || '').trim();
+      var bad = false;
+      if(ctrl.hasAttribute('required') && !val) bad = true;
+      if(ctrl.type === 'email' && val && !emailRe.test(val)) bad = true;
+      if(ctrl.type === 'tel' && val && val.replace(/[^0-9]/g,'').length < 7) bad = true;
+      setError(field, bad);
+      if(bad) ok = false;
+    });
+    return ok;
+  }
+
+  function showSuccess(form, key){
+    var content = form.closest('.alm-modal__content');
+    content.innerHTML =
+      '<div class="alm-success">' +
+        '<div class="alm-success__mark">&#10003;</div>' +
+        '<h3>' + (key === 'membership' ? 'Application received.' : 'Thanks &mdash; we&rsquo;ll be in touch.') + '</h3>' +
+        '<p>' + (key === 'membership'
+          ? 'We&rsquo;ll review and reach out about the current cohort.'
+          : 'A member of our team will follow up shortly.') + '</p>' +
+      '</div>';
+  }
+
+  function fallbackMailto(key, data){
+    var lines = Object.keys(data).map(function(k){ return k + ': ' + data[k]; });
+    var href = 'mailto:' + FALLBACK_EMAIL[key]
+      + '?subject=' + encodeURIComponent(SUBJECT[key])
+      + '&body=' + encodeURIComponent(lines.join('\n'));
+    window.location.href = href;
+  }
+
+  document.querySelectorAll('.alm-form').forEach(function(form){
+    // clear error on input
+    form.querySelectorAll('input, select, textarea').forEach(function(ctrl){
+      ctrl.addEventListener('input', function(){ setError(ctrl.closest('.alm-field'), false); });
+      ctrl.addEventListener('change', function(){ setError(ctrl.closest('.alm-field'), false); });
+    });
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var key = form.getAttribute('data-form');
+      if(!validate(form)) {
+        var firstErr = form.querySelector('.alm-field.has-error input, .alm-field.has-error select, .alm-field.has-error textarea');
+        if(firstErr) firstErr.focus();
+        return;
+      }
+      var data = {};
+      new FormData(form).forEach(function(v,k){ data[k] = v; });
+      data._source = 'aleron-pitch-deck';
+      var btn = form.querySelector('.alm-submit');
+      var endpoint = ENDPOINTS[key];
+      if(endpoint){
+        btn.disabled = true; btn.textContent = 'Sending&hellip;';
+        fetch(endpoint, {
+          method:'POST',
+          headers:{ 'Accept':'application/json', 'Content-Type':'application/json' },
+          body: JSON.stringify(data)
+        }).then(function(r){
+          if(r.ok) showSuccess(form, key);
+          else { btn.disabled = false; btn.textContent = (key==='membership'?'Submit application':'Send inquiry'); fallbackMailto(key, data); }
+        }).catch(function(){
+          btn.disabled = false; btn.textContent = (key==='membership'?'Submit application':'Send inquiry');
+          fallbackMailto(key, data);
+        });
+      } else {
+        // No endpoint configured yet: show success UX and open prefilled email
+        showSuccess(form, key);
+        fallbackMailto(key, data);
+      }
+    });
+  });
+})();
+</script>
+
+
 <!-- ============ FOOTER (from meridian), restyled to Aleron ============ -->
 <style>
   .site-footer { background:var(--graphite); color:#F5F1E8; border-top:1px solid rgba(245,241,232,0.14); padding:clamp(56px,8vh,88px) clamp(24px,7vw,120px) clamp(28px,4vh,40px); }
